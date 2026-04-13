@@ -1,18 +1,21 @@
-{% extends 'workshop_app/base.html' %}
+﻿{% extends 'workshop_app/base.html' %}
 
-	{% block title %}
-		Logged out
-	{% endblock %}
+{% block title %}Signed out | FOSSEE Workshops{% endblock %}
 
+{% block content %}
+<section class="section-head">
+    <div>
+        <h2>You have signed out</h2>
+        <p>Thank you for using the FOSSEE workshop management portal. Sign in again anytime to continue.</p>
+    </div>
+</section>
 
-	{% block content %}
-		<div class="container" align="center">
-			<br>
-			<h3>You have logged out successfully.</h3>
-			<h4>If you want to login again please
-				<a href="/">click here</a>
-			</h4>
-			<br>
-		</div>
-
-	{% endblock %}
+<section class="auth-card form-card">
+    <h3>Goodbye for now</h3>
+    <p>If you are finished, you can safely close the window or return to the homepage.</p>
+    <div class="hero-actions" style="margin-top:1rem;">
+        <a class="btn btn-primary" href="{% url 'workshop_app:login' %}">Sign in again</a>
+        <a class="btn btn-secondary" href="{% url 'workshop_app:index' %}">Home</a>
+    </div>
+</section>
+{% endblock %}

@@ -138,6 +138,12 @@ class WorkshopForm(forms.ModelForm):
         self.fields['tnc_accepted'].required = True
         self.fields['workshop_type'].label = "Workshop :"
         self.fields['date'].label = "Workshop Date :"
+        if 'venue' in self.fields:
+            self.fields['venue'].label = 'Venue / City :'
+            self.fields['venue'].widget.attrs.update({
+                'class': 'form-control',
+                'placeholder': 'Venue or city'
+            })
 
     class Meta:
         model = Workshop

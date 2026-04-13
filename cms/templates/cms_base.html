@@ -1,59 +1,76 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 {% load static %}
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ page.title|title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'cms/css/bootstrap.min.css' %}">
-
+    <link rel="stylesheet" href="{% static 'workshop_app/css/theme.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'workshop_app/css/base.css' %}" type="text/css"/>
     <script src="{% static 'cms/js/jquery-3.4.1.slim.min.js' %}"></script>
     <script src="{% static 'cms/js/popper.min.js' %}"></script>
     {{ page.imports | safe }}
     <script src="{% static 'cms/js/bootstrap.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'workshop_app/css/base.css' %}" type="text/css"/>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
-<body>
-
-<nav class=" navbar navbar-dark navbar navbar-expand-lg bg-dark fixed-top">
-    <a class="navbar-brand" href="/">FOSSEE Workshops</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-        </ul>
-        <div class="my-2 my-lg-0">
-            <ul class="navbar-nav mr-auto">
-                {% for nav in navs %}
-                    <li class="nav-item">
-                        {% if nav.subnavs %}
-                            <ul class="navbar-nav mr-auto">
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span
-                                            class="material-icons" style="vertical-align: middle">{{ nav.name }}</span>
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                        {% for subnav in nav.subnavs %}
-                                        <a class="dropdown-item" href="{{ subnav.link }}">{{ subnav.name }}</a>
-                                        {% endfor %}
-                                    </div>
-                                </li>
-                            </ul>
-                        {% else %}
-                            <a class="nav-link" href="{{ nav.link }}">{{ nav.name }}</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-
-            </ul>
+<body class="app-shell">
+<header class="site-header">
+    <div class="header-inner container">
+        <a class="brand" href="/">
+            <img class="brand-logo" src="{% static 'workshop_app/img/fossee_logo.png' %}" alt="FOSSEE logo">
+            <span class="brand-text">FOSSEE Workshops</span>
+        </a>
+        <button class="nav-trigger" aria-label="Toggle navigation" type="button">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="site-nav" aria-label="CMS navigation">
+            {% for nav in navs %}
+                {% if nav.subnavs %}
+                    <div class="dropdown">
+                        <a class="nav-item dropdown-toggle" href="#" role="button" id="dropdown{{ forloop.counter }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ nav.name }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown{{ forloop.counter }}">
+                            {% for subnav in nav.subnavs %}
+                                <a class="dropdown-item" href="{{ subnav.link }}">{{ subnav.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <a class="nav-item" href="{{ nav.link }}">{{ nav.name }}</a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+        <div class="nav-actions">
+            {% if request.user.is_authenticated %}
+                <a class="btn btn-sm btn-secondary" href="{% url 'workshop_app:view_own_profile' %}">{{ request.user.get_full_name|default:request.user.username|title }}</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'workshop_app:logout' %}">Sign out</a>
+            {% else %}
+                <a class="btn btn-sm btn-secondary" href="{% url 'workshop_app:register' %}">Sign up</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'workshop_app:login' %}">Sign in</a>
+            {% endif %}
         </div>
     </div>
-</nav>
-<div class="base-content">
-{{ page.content | safe }}
-</div>
+</header>
+<main class="page-content">
+    <div class="container base-content">
+        {{ page.content | safe }}
+    </div>
+</main>
+<footer class="footer page-footer">
+    <div class="container">
+        © FOSSEE Workshops
+    </div>
+</footer>
+<div id="page-animation-root"></div>
+<script src="{% static 'workshop_app/js/scrollAnimations.js' %}"></script>
 </body>
 </html>

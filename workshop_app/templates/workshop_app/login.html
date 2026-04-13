@@ -1,53 +1,132 @@
 {% extends 'workshop_app/base.html' %}
 
-{% block title %}
-    Login
-{% endblock %}
+{% block title %}Login | FOSSEE Workshops{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-md-offset-6">
-                <div class="card">
-                    <div class="card-body">
-                        <form class="px-3 py-3" method="post">
-                        {% csrf_token %}
-                        {% if form.errors %}
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <div class="alert alert-dismissible alert-danger">
-                                        <button type="button" class="close" data-dismiss="alert">
-                                            <i class="fa fa-close"></i>
-                                        </button>
-                                        <strong>{{ error|escape }}</strong>
-                                    </div>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <div class="alert alert-dismissible alert-danger">
-                                    <button type="button" class="close" data-dismiss="alert">
-                                        <i class="fa fa-close"></i>
-                                    </button>
-                                    <strong>{{ error|escape }}</strong>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                        <div class="form-group">
-                          <label for="id_username">Username</label>
-                          {{ form.username }}
-                        </div>
-                        <div class="form-group">
-                          <label for="id_password">Password</label>
-                          {{ form.password }}
-                        </div>
-                        <button type="submit" class="btn btn-primary">Sign in</button>
-                        </form>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'workshop_app:register' %}">New around here? Sign up</a>
-                        <a class="dropdown-item" href="{% url 'password_reset' %}">Forgot password?</a>
-                    </div>
-                </div>  
-            </div>
+<div class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">FOSSEE | IIT Bombay</span>
+        <h1 class="hero-title">Secure access for every workshop role</h1>
+        <p>Choose the portal that matches your role and continue with the correct sign-in flow.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="#login-panel">Log in</a>
+            <a class="btn btn-outline" href="{% url 'workshop_app:register' %}">Register</a>
         </div>
     </div>
+
+    <section class="auth-card" id="login-panel">
+        <div class="role-banner student" id="role-banner">
+            <span class="material-icons">login</span>
+            <div>
+                <strong id="role-banner-title">Role-based login</strong>
+            </div>
+        </div>
+        <div class="role-banner-note">
+            <p>Choose the correct role to continue with the right sign-in experience.</p>
+        </div>
+
+        <div class="role-selector" id="role-selector">
+            <button type="button" class="role-card student" data-role="student" aria-label="Student login">
+                <span class="role-token">S</span>
+                <strong>Student Portal</strong>
+                <p>Access workshops, registrations, and schedules in a clean student view.</p>
+                <div class="role-cta">
+                    <span>Student access</span>
+                    <span class="material-icons">school</span>
+                </div>
+            </button>
+            <button type="button" class="role-card admin" data-role="admin" aria-label="Admin login">
+                <span class="role-token">A</span>
+                <strong>Admin Portal</strong>
+                <p>Manage approvals, reports, and workshop workflows with authority.</p>
+                <div class="role-cta">
+                    <span>Admin access</span>
+                    <span class="material-icons">admin_panel_settings</span>
+                </div>
+            </button>
+        </div>
+
+        <div class="auth-panel" id="auth-panel" style="display:none; margin-top: 1.75rem;">
+            <div class="role-pill student" id="role-pill">Signing in as <strong>Student</strong></div>
+            <h2 id="auth-title">Student Sign in</h2>
+            <p class="form-caption" id="auth-caption">Use your IIT Bombay credentials to continue.</p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="login_role" id="login-role-input" value="student">
+                {% if form.non_field_errors %}
+                    <div class="flash-message flash-error">
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="form-label" for="id_username">Username</label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}
+                        <span class="input-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="id_password">Password</label>
+                    {{ form.password }}
+                    {% for error in form.password.errors %}
+                        <span class="input-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary">Sign in now</button>
+            </form>
+            <div class="form-caption" style="margin-top:1rem;">
+                New around here? <a href="{% url 'workshop_app:register' %}">Register</a> or <a href="{% url 'password_reset' %}">reset password</a>.
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra-custom-scripts %}
+<script>
+    const roleSelector = document.getElementById('role-selector');
+    const authPanel = document.getElementById('auth-panel');
+    const roleBanner = document.getElementById('role-banner');
+    const roleBannerTitle = document.getElementById('role-banner-title');
+    const rolePill = document.getElementById('role-pill');
+    const authTitle = document.getElementById('auth-title');
+    const authCaption = document.getElementById('auth-caption');
+    const roleInput = document.getElementById('login-role-input');
+
+    function getRoleFromQuery() {
+        return new URLSearchParams(window.location.search).get('role');
+    }
+
+    function applyRole(role) {
+        const normalized = role === 'admin' ? 'admin' : 'student';
+        rolePill.className = 'role-pill ' + normalized;
+        roleBanner.className = 'role-banner ' + normalized;
+        rolePill.innerHTML = 'Signing in as <strong>' + (normalized === 'admin' ? 'Administrator' : 'Student') + '</strong>';
+        authTitle.textContent = normalized === 'admin' ? 'Administrator Sign in' : 'Student Sign in';
+        authCaption.textContent = normalized === 'admin'
+            ? 'Use your admin credentials to manage workshops and approvals.'
+            : 'Use your student credentials to access your workshop schedule and updates.';
+        roleInput.value = normalized;
+        authPanel.style.display = 'block';
+        roleBannerTitle.textContent = normalized === 'admin' ? 'Admin portal selected' : 'Student portal selected';
+        if (!window.location.search.includes('role=')) {
+            window.history.replaceState({}, '', '?role=' + normalized);
+        }
+    }
+
+    function chooseRole(event) {
+        const button = event.currentTarget;
+        applyRole(button.dataset.role);
+    }
+
+    if (roleSelector) {
+        roleSelector.querySelectorAll('[data-role]').forEach(button => {
+            button.addEventListener('click', chooseRole);
+        });
+        const selected = getRoleFromQuery();
+        if (selected) {
+            applyRole(selected);
+        }
+    }
+</script>
 {% endblock %}

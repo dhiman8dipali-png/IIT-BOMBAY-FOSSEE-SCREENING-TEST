@@ -1,6 +1,7 @@
 import os
 import uuid
-import pandas as pd
+
+from collections import Counter
 
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
@@ -160,26 +161,22 @@ class AttachmentFile(models.Model):
 class WorkshopManager(models.Manager):
 
     def get_workshops_by_state(self, workshops):
-        w = workshops.values_list("coordinator__profile__state", flat=True)
+        state_codes = workshops.values_list("coordinator__profile__state", flat=True)
         states_map = dict(states)
-        df = pd.DataFrame(list(w))
+        grouped_data = Counter(state_codes)
         data_states, data_counts = [], []
-        if not df.empty:
-            grouped_data = df.value_counts().to_dict()
-            for state, count in grouped_data.items():
-                state_name = state[0]
-                data_states.append(states_map[state_name])
+        for state_code, count in grouped_data.items():
+            if state_code:
+                data_states.append(states_map.get(state_code, state_code))
                 data_counts.append(count)
         return data_states, data_counts
 
     def get_workshops_by_type(self, workshops):
-        w = workshops.values_list("workshop_type__name", flat=True)
-        df = pd.DataFrame(list(w))
+        workshop_types = workshops.values_list("workshop_type__name", flat=True)
+        grouped_data = Counter(workshop_types)
         data_wstypes, data_counts = [], []
-        if not df.empty:
-            grouped_data = df.value_counts().to_dict()
-            for ws, count in grouped_data.items():
-                ws_name = ws[0]
+        for ws_name, count in grouped_data.items():
+            if ws_name:
                 data_wstypes.append(ws_name)
                 data_counts.append(count)
         return data_wstypes, data_counts
@@ -199,12 +196,20 @@ class Workshop(models.Model):
         WorkshopType, on_delete=models.CASCADE,
         help_text='Select the type of workshop.'
     )
+    venue = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Optional workshop venue or city'
+    )
     date = models.DateField()
     STATUS_CHOICES = [(0, 'Pending'),
                       (1, 'Accepted'),
                       (2, 'Deleted')]
 
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     tnc_accepted = models.BooleanField(
         help_text="I accept the terms and conditions"
     )

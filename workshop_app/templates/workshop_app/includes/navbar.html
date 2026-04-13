@@ -1,0 +1,31 @@
+﻿{% load static %}
+{% load custom_filters %}
+<header class="site-header">
+    <div class="header-inner container">
+        <a class="brand" href="{% url 'workshop_app:index' %}">
+            <img class="brand-logo" src="{% static 'workshop_app/img/fossee_logo.png' %}" alt="FOSSEE logo">
+            <span class="brand-text">FOSSEE Workshops</span>
+        </a>
+        <button class="nav-trigger" aria-label="Toggle navigation" type="button">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="site-nav" aria-label="Primary navigation">
+            <a class="nav-item" href="{% url 'workshop_app:workshop_type_list' %}">Workshops</a>
+            <a class="nav-item" href="{% url 'statistics_app:public' %}">Statistics</a>
+            {% if user.is_authenticated and request.user|has_group:"instructor" %}
+                <a class="nav-item" href="{% url 'statistics_app:team' %}">Team view</a>
+            {% endif %}
+        </nav>
+        <div class="nav-actions">
+            {% if user.is_authenticated %}
+                <a class="btn btn-sm btn-secondary" href="{% url 'workshop_app:view_own_profile' %}">{{ user.get_full_name|default:user.username|title }}</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'workshop_app:logout' %}">Sign out</a>
+            {% else %}
+                <a class="btn btn-sm btn-secondary" href="{% url 'workshop_app:login' %}">Sign in</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'workshop_app:register' %}">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

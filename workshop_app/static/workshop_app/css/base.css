@@ -1,17 +1,17 @@
-/**
+﻿/**
  * Footer Styles
  */
 .navbar {
     z-index: 1000;
 }
 .footer {
-    position: fixed;
-    bottom: 0;
+    position: static;
     width: 100%;
-    background-color: #61615F;
-    color: white;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.75);
     text-align: center;
-    z-index: 100;
+    padding: 1.25rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .base-content {
     padding-top: 5em;

@@ -1,32 +1,24 @@
-{% extends 'workshop_app/base.html' %}
+﻿{% extends 'workshop_app/base.html' %}
 
-{% block title %}
-    View Workshop details
-{% endblock %}
+{% block title %}{{ workshop_type.name }} | FOSSEE Workshops{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h2 class="text-center m-3">Workshop Details</h2>
-        <table class="table table-hover">
-            <tr class="d-flex">
-                <th class="col-3">Workshop Name :</th>
-                <td class="col">{{ workshop_type.name }}</td>
-            </tr>
-            <tr class="d-flex">
-                <th class="col-3">Duration :</th>
-                <td class="col">{{ workshop_type.duration }} day(s)</td>
-            </tr>
-            <tr class="d-flex">
-                <th class="col-3">Description :</th>
-                <td class="col">{{ workshop_type.description }}</td>
-            </tr>
-            <tr class="d-flex">
-                <th class="col-3">Terms and Conditions :</th>
-                <td class="col">{{ workshop_type.terms_and_conditions }}</td>
-            </tr>
-        </table>
+<div class="section-head">
+    <div>
+        <h2>{{ workshop_type.name }}</h2>
+        <p>Learn more about this workshop type, including duration and important terms.</p>
     </div>
+</div>
 
+<section class="card-grid">
+    <article class="workshop-card">
+        <div class="card-meta">{{ workshop_type.duration }} day{{ workshop_type.duration|pluralize }}</div>
+        <h3>Overview</h3>
+        <p>{{ workshop_type.description }}</p>
+    </article>
+    <article class="workshop-card">
+        <h3>Terms and conditions</h3>
+        <p>{{ workshop_type.terms_and_conditions }}</p>
+    </article>
+</section>
 {% endblock %}
-
-

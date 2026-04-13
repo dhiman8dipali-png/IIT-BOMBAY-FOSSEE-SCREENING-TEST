@@ -1,48 +1,72 @@
 {% extends 'workshop_app/base.html' %}
 
-{% block title %}
- Workshop  Statistics
+{% block title %}Team Statistics{% endblock %}
+
+{% block extra-dependencies %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 {% endblock %}
 
 {% block content %}
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-2">
-            <ul class="nav nav-pills list-group">
-                {% for team in all_teams %}
-                    <li class="nav-item">
-                        <a href="{% url 'statistics_app:team' team.id %}" class="nav-link list-group-item">
-                            Team {{forloop.counter}}
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="col-md-8">
-            <br>
-            <canvas id="myChart"></canvas>
-        </div>
+<section class="section-head">
+    <div>
+        <h2>Team workshop performance</h2>
+        <p>Compare instructor workshop output across each team with a responsive chart.</p>
     </div>
-</div>
-<script>
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'bar',
+</section>
 
-        // The data for our dataset
-        data: {
-            labels: {{team_labels|safe}},
-            datasets: [{
-                data: {{ws_count|safe}},
-                label: "Team Members Workshops",
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-            }]
-        },
-        // Configuration options go here
-        options: {}
+<div class="card-grid">
+    <article class="section-card" style="min-width: 260px;">
+        <h3>Teams</h3>
+        <div class="list-group stats-team-list">
+            {% for team_item in all_teams %}
+                <a href="{% url 'statistics_app:team' team_item.id %}"
+                   class="list-group-item nav-link{% if team_item.id == team.id %} active{% endif %}">
+                    {{ team_item.name|default:'Team' }} {{ forloop.counter }}
+                </a>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="section-card" style="flex: 1;">
+        <div class="section-head">
+            <div>
+                <h3>{{ team.name|default:'Selected Team' }}</h3>
+                <p>Instructor counts for the selected team.</p>
+            </div>
+        </div>
+        <div class="section-card" style="padding: 1.5rem;">
+            <canvas id="teamChart" width="400" height="240"></canvas>
+        </div>
+    </article>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('teamChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ team_labels|safe }},
+                datasets: [{
+                    data: {{ ws_count|safe }},
+                    label: 'Workshops per instructor',
+                    backgroundColor: 'rgba(124, 58, 237, 0.75)',
+                    borderColor: 'rgba(124, 58, 237, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -35,7 +35,9 @@ SECRET_KEY = 'smvfixi&v4mrulp2wvxp)kwjf^yqv-3h+f+nu5m)&=o=7(nlk1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Allow local network devices to connect while developing.
+# Use your machine IP on Android/iOS instead of localhost when accessing from another device.
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -66,7 +68,10 @@ ROOT_URLCONF = 'workshop_portal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['workshop_app/templates'],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'workshop_app', 'templates'),
+            os.path.join(BASE_DIR, 'cms', 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,7 +137,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = 'workshop_app/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'workshop_app', 'static'),
+]
 
 LOGIN_URL = '/workshop/login/'
 

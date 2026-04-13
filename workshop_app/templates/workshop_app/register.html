@@ -1,35 +1,110 @@
 {% extends 'workshop_app/base.html' %}
 
-	{% block title %}
-		Register
-	{% endblock %}
+{% block title %}Register | FOSSEE Workshops{% endblock %}
 
 {% block content %}
+<div class="section-head" style="margin-bottom: 1.5rem;">
+    <div>
+        <h2>Create your account</h2>
+        <p>Register as a coordinator or instructor and start managing workshops with a clean, professional workflow.</p>
+    </div>
+</div>
 
-	<style type="text/css">
-    	label.required::after {
-    	content: "*";
-    	color: red;
-		}
+<section class="auth-card form-card">
+    <h2>Registration details</h2>
+    <p class="form-caption">Fill in the form below to get access to workshop booking and coordination tools.</p>
 
-		.errorlist {
-      color: red;
-    }
-	</style>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="flash-message flash-error">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
 
-	<div class="container" >
-		<br>
-		<h3>Coordinator Registration Form</h3>
-		<br>
-		<form action="" method="post">
-			{% csrf_token %}
-				<table class="table table-bordered">
-					{{ form.as_table }}
-				</table>
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_username">Username</label>
+                {{ form.username }}
+                {% for error in form.username.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+                <span class="form-caption">Letters, digits, period and underscore only.</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_email">Email</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
 
-				<button class="btn btn-primary" type="submit">Register</button>
-		</form><br>
-		<!-- Activate when Instructor registeration starts -->
-		<br>
-	</div>
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_password">Password</label>
+                {{ form.password }}
+                {% for error in form.password.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_confirm_password">Confirm password</label>
+                {{ form.confirm_password }}
+                {% for error in form.confirm_password.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_first_name">First name</label>
+                {{ form.first_name }}
+                {% for error in form.first_name.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_last_name">Last name</label>
+                {{ form.last_name }}
+                {% for error in form.last_name.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_phone_number">Phone number</label>
+                {{ form.phone_number }}
+                {% for error in form.phone_number.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_institute">Institute/Organization</label>
+                {{ form.institute }}
+                {% for error in form.institute.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_department">Department</label>
+                {{ form.department }}
+                {% for error in form.department.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_location">Location</label>
+                {{ form.location }}
+                {% for error in form.location.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="form-group">
+                <label class="form-label" for="id_state">State</label>
+                {{ form.state }}
+                {% for error in form.state.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_how_did_you_hear_about_us">How did you hear about us?</label>
+                {{ form.how_did_you_hear_about_us }}
+                {% for error in form.how_did_you_hear_about_us.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+        <div class="form-caption" style="margin-top: 1rem; color: #cbd5e1;">
+            Already have an account? <a class="link-muted" href="{% url 'workshop_app:login' %}">Sign in</a> instead.
+        </div>
+    </form>
+</section>
 {% endblock %}

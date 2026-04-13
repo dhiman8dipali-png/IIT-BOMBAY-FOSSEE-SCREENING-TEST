@@ -68,6 +68,11 @@ def workshop_public_stats(request):
             workshops = workshops.filter(instructor_id=user.id)
         else:
             workshops = workshops.filter(coordinator_id=user.id)
+
+    workshops = workshops.select_related(
+        'workshop_type', 'coordinator__profile', 'instructor'
+    )
+
     if download:
         data = workshops.values(
             "workshop_type__name", "coordinator__first_name",
@@ -95,9 +100,14 @@ def workshop_public_stats(request):
     paginator = Paginator(workshops, 30)
     page = request.GET.get('page')
     workshops = paginator.get_page(page)
-    context = {"form": form, "objects": workshops, "ws_states": ws_states,
-               "ws_count": ws_count, "ws_type": ws_type,
-               "ws_type_count": ws_type_count}
+    context = {
+        "form": form,
+        "objects": workshops,
+        "ws_states": ws_states,
+        "ws_count": ws_count,
+        "ws_type": ws_type,
+        "ws_type_count": ws_type_count,
+    }
     return render(
         request, 'statistics_app/workshop_public_stats.html', context
     )
@@ -126,6 +136,11 @@ def team_stats(request, team_id=None):
     ws_count = list(member_workshop_data.values())
     return render(
         request, 'statistics_app/team_stats.html',
-        {'team_labels': team_labels, "ws_count": ws_count, 'all_teams': teams,
-         'team_id': team.id}
+        {
+            'team': team,
+            'team_labels': team_labels,
+            'ws_count': ws_count,
+            'all_teams': teams,
+            'team_id': team.id,
+        }
     )

@@ -1,20 +1,32 @@
-{% extends "workshop_app/base.html" %}
+﻿{% extends 'workshop_app/base.html' %}
 
-{% block title %}
-	Edit Profile
-{% endblock %}
+{% block title %}Edit Profile | FOSSEE Workshops{% endblock %}
 
 {% block content %}
-  <div class="container">
-    <form action="{{URL_ROOT}}/edit_profile/" method="post" >
-    {% csrf_token %}
-      <center>
-        <table class="table table-bordered">
-          {{ form.as_table }}
-        </table>
-      </center>
-      <br>
-        <button class="btn btn-primary pull-right" type="submit">Save Profile</button>
+<section class="section-head">
+    <div>
+        <h2>Edit profile</h2>
+        <p>Update your account details and keep your contact information current for workshop coordination.</p>
+    </div>
+</section>
+
+<section class="auth-card form-card">
+    <form action="{{ URL_ROOT }}/edit_profile/" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="flash-message flash-error">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
+        {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p class="form-caption">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<span class="input-error">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save profile</button>
     </form>
-  </div>
+</section>
 {% endblock %}

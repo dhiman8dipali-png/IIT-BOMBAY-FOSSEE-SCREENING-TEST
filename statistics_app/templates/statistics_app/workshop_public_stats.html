@@ -1,140 +1,181 @@
 {% extends 'workshop_app/base.html' %}
 
-{% block title %} Statistics {% endblock %}
+{% block title %}Workshop Statistics{% endblock %}
+
+{% block extra-dependencies %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3">
-            <form method="GET">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h3><u>Filters</u></h3>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{% url 'statistics_app:public' %}" class="btn btn-outline-info">
-                                    <i class="fa fa-times"></i>&nbsp;Clear
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div>From date: {{form.from_date}}</div>
-                        <div>To date: {{form.to_date}}</div>
-                        <div>Workshop: {{form.workshop_type}}</div>
-                        <div>State: {{form.state}}</div>
-                        <div>{{form.sort.help_text}}: {{form.sort}}</div>
-                        {% if request.user.is_authenticated %}
-                        <div>{{form.show_workshops.help_text}}: {{form.show_workshops}}</div>
-                        {% endif %}
-                        <br>
-                        <div class="row justify-content-center">
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-eye"></i>&nbsp;View
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-info" name="download" value="download">
-                                    <i class="fa fa-download"></i>&nbsp;Download
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
+<section class="section-head">
+    <div>
+        <h2>Workshop statistics</h2>
+        <p>Filter workshop activity by date, state and type, then review the results in theme-aligned charts and tables.</p>
+    </div>
+</section>
+
+<div class="card-grid">
+    <article class="section-card">
+        <h3>Filters</h3>
+        <form method="get" class="stats-filter-form">
+            <div class="form-group">
+                <label class="form-label" for="id_from_date">From date</label>
+                {{ form.from_date }}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_to_date">To date</label>
+                {{ form.to_date }}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_workshop_type">Workshop type</label>
+                {{ form.workshop_type }}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_state">State</label>
+                {{ form.state }}
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="id_sort">Sort by</label>
+                {{ form.sort }}
+            </div>
+            {% if request.user.is_authenticated %}
+            <div class="form-group">
+                <label class="form-label">Show my workshops only</label>
+                {{ form.show_workshops }}
+            </div>
+            {% endif %}
+            <div class="field-row" style="gap: 1rem; align-items: center; margin-top: 1.25rem;">
+                <button type="submit" class="btn btn-primary">View results</button>
+                <button type="submit" class="btn btn-secondary" name="download" value="download">Download CSV</button>
+                <a href="{% url 'statistics_app:public' %}" class="btn btn-outline">Clear filters</a>
+            </div>
+        </form>
+    </article>
+
+    <article class="section-card">
+        <div class="stats-summary-grid">
+            <div class="section-card">
+                <strong>{{ objects.paginator.count }}</strong>
+                <p>Workshops returned</p>
+            </div>
+            <div class="section-card">
+                <strong>{{ ws_states|length }}</strong>
+                <p>States represented</p>
+            </div>
+            <div class="section-card">
+                <strong>{{ ws_type|length }}</strong>
+                <p>Workshop types</p>
+            </div>
+            <div class="section-card">
+                <strong>{{ objects.paginator.num_pages }}</strong>
+                <p>Pages of results</p>
+            </div>
         </div>
-        <div class="col">
-            <div class="row">
-                <div class="col-md-6">
-                    {% include "statistics_app/paginator.html" %}
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-info" id="state_graph">
-                        <i class="fa fa-bar-chart"></i>&nbsp;State chart
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-info" id="type_graph">
-                        <i class="fa fa-bar-chart"></i>&nbsp;Workshops chart
-                    </button>
+
+        <div class="section-card" style="padding: 1.5rem;">
+            <div class="section-head" style="margin-bottom: 1rem;">
+                <div>
+                    <h3>Charts</h3>
+                    <p>Select a chart to compare workshops by state or type.</p>
                 </div>
             </div>
-            <table class="table table-responsive-sm">
-                <thead>
-                    <tr>
-                        <th>Sr No.</th>
-                        <th>Coordinator Name</th>
-                        <th>Institute Name</th>
-                        <th>Instructor Name</th>
-                        <th>Workshop Name</th>
-                        <th>Workshop Date</th>
-                    </tr>
-                </thead>
-                {% csrf_token %}
-                {% for workshop in objects %}
-                    <tbody>
+            <div class="hero-actions" style="justify-content: flex-start; gap: 0.75rem; margin-bottom: 1rem;">
+                <button class="btn btn-primary" id="state_graph" type="button">State chart</button>
+                <button class="btn btn-secondary" id="type_graph" type="button">Workshop type chart</button>
+            </div>
+            <div class="chart-card" style="min-height: 340px;">
+                <canvas id="statsChart" width="400" height="240"></canvas>
+            </div>
+        </div>
+
+        <div class="section-card" style="padding: 1.5rem;">
+            <div class="section-head" style="margin-bottom: 1rem;">
+                <div>
+                    <h3>Workshop list</h3>
+                    <p>Review the filtered workshops with weekend-friendly detail and organizer information.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
                         <tr>
-                            <td>{{ forloop.counter0|add:objects.start_index}}</td>
-                            <td>{{ workshop.coordinator.get_full_name | capfirst }}</td>
-                            <td>{{ workshop.coordinator.profile.institute | capfirst }}</td>
-                            <td>{{ workshop.instructor.get_full_name | capfirst }}</td>
-                            <td>{{ workshop.workshop_type.name }}</td>
-                            <td>{{ workshop.date | date}}</td>
+                            <th>#</th>
+                            <th>Coordinator</th>
+                            <th>Institute</th>
+                            <th>Instructor</th>
+                            <th>Workshop</th>
+                            <th>Date</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for workshop in objects %}
+                            <tr>
+                                <td>{{ forloop.counter0|add:objects.start_index }}</td>
+                                <td>{{ workshop.coordinator.get_full_name|capfirst }}</td>
+                                <td>{{ workshop.coordinator.profile.institute|capfirst }}</td>
+                                <td>{{ workshop.instructor.get_full_name|capfirst }}</td>
+                                <td>{{ workshop.workshop_type.name }}</td>
+                                <td>{{ workshop.date|date }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">No workshops match these filters.</td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
-                {% endfor %}
-            </table>
+                </table>
+            </div>
             {% include "statistics_app/paginator.html" %}
         </div>
-    </div>
+    </article>
 </div>
 
-<!-- The Modal -->
-<div id="dialog" title="Workshops Statistics">
-    <canvas id="myChart"></canvas>
-</div>
+<script>
+    var state_labels = {{ ws_states|safe }};
+    var state_data = {{ ws_count|safe }};
+    var type_labels = {{ ws_type|safe }};
+    var type_data = {{ ws_type_count|safe }};
+    var statsChart;
 
-<script type="text/javascript">
-    var state_labels = {{ws_states|safe}};
-    var state_data = {{ws_count|safe}};
-    var type_labels = {{ws_type|safe}};
-    var type_data = {{ws_type_count|safe}};
-    var chart;
-    $("#state_graph").on("click", function() {
-        show_graph(state_labels, state_data, "State wise workshops");
-    });
-    $("#type_graph").on("click", function() {
-        show_graph(type_labels, type_data, "Type wise workshops");
-    });
-
-    function show_graph(labels, data, graph_name, chart_name) {
-        var ctx = document.getElementById('myChart').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            // The type of chart we want to create
+    function createStatsChart(labels, data, label) {
+        var ctx = document.getElementById('statsChart').getContext('2d');
+        if (statsChart) {
+            statsChart.destroy();
+        }
+        statsChart = new Chart(ctx, {
             type: 'bar',
-
-            // The data for our dataset
             data: {
                 labels: labels,
                 datasets: [{
+                    label: label,
                     data: data,
-                    label: graph_name,
-                    backgroundColor: 'rgb(255, 99, 132)',
-                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(56, 189, 248, 0.75)',
+                    borderColor: 'rgba(56, 189, 248, 1)',
+                    borderWidth: 1
                 }]
             },
-            // Configuration options go here
-            options: {}
-        });
-        $("#dialog").dialog({
-            width: 900,
-            height: 500
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
         });
     }
-</script>
 
+    document.addEventListener('DOMContentLoaded', function() {
+        createStatsChart(state_labels, state_data, 'Workshops by state');
+        document.getElementById('state_graph').addEventListener('click', function() {
+            createStatsChart(state_labels, state_data, 'Workshops by state');
+        });
+        document.getElementById('type_graph').addEventListener('click', function() {
+            createStatsChart(type_labels, type_data, 'Workshops by type');
+        });
+    });
+</script>
 {% endblock %}
